@@ -4,6 +4,8 @@
 
 zCore v0.1x (Beta)
 
+Requires: Python 3.12
+
 This is not an official public release. This release is for alpha testing.
 
 <a href="https://m0de-60.github.io/web/zcore.htm">User Guide</a>
