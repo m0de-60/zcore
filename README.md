@@ -23,3 +23,5 @@ This is not an official public release. This release is for alpha testing.
 CURRENTLY IN DEVELOPMENT
 
 Please be patient, it's coming!
+
+https://m0de-60.github.io/web
