@@ -2,8 +2,24 @@
 
 <h2>Multi-threaded, asyncronous and scriptable IRC bot software written in Python</h2>
 
-INSTALLATION, CONFIGURATION ETC: <a href='https://m0de-60.github.io/web/zcore.htm'>v0.1x User's Guide (Working Draft)</a>
+zCore v0.1x (Beta)
 
-IN DEVELOPMENT
+This is not an official public release. This release is for alpha testing.
+
+<a href="https://m0de-60.girhub.io/web/zcore.htm">User Guide</a>
+
+<a href="https://m0de-60.girhub.io/web/zcore.htm#installation-linux">INSTALLATION</a>
+
+<a href="https://m0de-60.girhub.io/web/zcore.htm#main-configuration">CONFIGURATION</a>
+
+<a href="https://m0de-60.girhub.io/web/zcore.htm#startup-linux">START UP</a>
+
+<a href="https://m0de-60.girhub.io/web/zcore.htm#core-commands">CORE COMMANDS</a>
+
+<a href="https://m0de-60.girhub.io/web/zcore.htm#system-commands">SYSTEM COMMANDS</a>
+
+<a href="https://m0de-60.girhub.io/web/zcore.htm#about-zcore">ABOUT zCore</a>
+
+CURRENTLY IN DEVELOPMENT
 
 Please be patient, it's coming!
