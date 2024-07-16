@@ -69,7 +69,7 @@ async def start_up():
     # version hard code do not change ----------------------------------------------------------------------------------
     # !!!zcore module failure/errors will occur with error changes!!!
     zcore['version'] = '0.1x'
-    zcore['versionid'] = 'W1NGZ3R0'
+    zcore['versionid'] = 'Z3R00N3'
     zprint(f'[*] RUNNING * zCore version: {zcore['version']} by Neo Nemesis')
     # ------------------------------------------------------------------------------------------------------------------
     # Loading system module (if specified in zcore.cnf: [zcore] > system = modulename
