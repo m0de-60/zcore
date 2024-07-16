@@ -6,19 +6,19 @@ zCore v0.1x (Beta)
 
 This is not an official public release. This release is for alpha testing.
 
-<a href="https://m0de-60.girhub.io/web/zcore.htm">User Guide</a>
+<a href="https://m0de-60.github.io/web/zcore.htm">User Guide</a>
 
-<a href="https://m0de-60.girhub.io/web/zcore.htm#installation-linux">INSTALLATION</a>
+<a href="https://m0de-60.github.io/web/zcore.htm#installation-linux">INSTALLATION</a>
 
-<a href="https://m0de-60.girhub.io/web/zcore.htm#main-configuration">CONFIGURATION</a>
+<a href="https://m0de-60.github.io/web/zcore.htm#main-configuration">CONFIGURATION</a>
 
-<a href="https://m0de-60.girhub.io/web/zcore.htm#startup-linux">START UP</a>
+<a href="https://m0de-60.github.io/web/zcore.htm#startup-linux">START UP</a>
 
-<a href="https://m0de-60.girhub.io/web/zcore.htm#core-commands">CORE COMMANDS</a>
+<a href="https://m0de-60.github.io/web/zcore.htm#core-commands">CORE COMMANDS</a>
 
-<a href="https://m0de-60.girhub.io/web/zcore.htm#system-commands">SYSTEM COMMANDS</a>
+<a href="https://m0de-60.github.io/web/zcore.htm#system-commands">SYSTEM COMMANDS</a>
 
-<a href="https://m0de-60.girhub.io/web/zcore.htm#about-zcore">ABOUT zCore</a>
+<a href="https://m0de-60.github.io/web/zcore.htm#about-zcore">ABOUT zCore</a>
 
 CURRENTLY IN DEVELOPMENT
 
