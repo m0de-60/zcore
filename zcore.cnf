@@ -1,0 +1,19 @@
+[zcore]
+serverlist = server1
+botmaster = YourUsername
+botmodes = 0
+pingtime = 75
+system = sys_zcore
+plugins = 0
+
+[server1]
+serverid = server1
+serveraddr = irc.servername.net
+serverport = 6667
+serverssl = no
+botname = zCore01
+botpass = 0
+channels = #channelname
+admin = 0
+access = 0
+akick = 0
