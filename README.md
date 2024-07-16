@@ -24,4 +24,4 @@ CURRENTLY IN DEVELOPMENT
 
 Please be patient, it's coming!
 
-https://m0de-60.github.io/web
+https://m0de-60.github.io/web/
