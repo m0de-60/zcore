@@ -1,5 +1,5 @@
 #! /usr/bin/python3
-# Mode60 Ultra-beta Prototype
+# Mode60 Ultra-beta ZeroOne
 # ======================================================================================================================
 # Title.............: 'zcore'
 # Filename..........: sys_zcore.py (system module)
@@ -1087,7 +1087,6 @@ def bot_sleep(value):
     return
 
 # **[ Date and Time Functions ]=========================================================================================
-
 # Current Date ---------------------------------------------------------------------------------------------------------
 def cdate():
     to_day = date.today()
@@ -1098,8 +1097,19 @@ def ctime():
     now = datetime.now()
     return now.strftime("%H:%M:%S")
 
-# **[ File Handling Functions ]=========================================================================================
+# Current Day of the year ----------------------------------------------------------------------------------------------
+def cday():
+    return gettok(str(date.today()), 2, '-')
 
+# Current Week of the year ---------------------------------------------------------------------------------------------
+def cweek():
+    return date.today().isocalendar()[1]
+
+# Current Month of the year --------------------------------------------------------------------------------------------
+def cmonth():
+    return gettok(str(date.today()), 1, '-')
+
+# **[ File Handling Functions ]=========================================================================================
 # Returns True if file exists, otherwise False -------------------------------------------------------------------------
 def isfile(filename):
     return os.path.isfile(filename)

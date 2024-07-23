@@ -1,5 +1,5 @@
 #! /usr/bin/python3
-# Mode60 Ultra-beta Prototype
+# Mode60 Ultra-beta ZeroOne
 # ======================================================================================================================
 # Title.............: 'zcore'
 # Filename..........: zcore.py (main file)
@@ -787,6 +787,23 @@ async def irc_loop(threadname):
 # <-- End irc_loop() ===================================================================================================
 
 # ======================================================================================================================
+# module_stop('serverid'):
+# Stops any plugins on server and its channels in the even of a connection loss/interruption (OSError, SSLError)
+def module_stop(server):
+    global zcore
+
+    # run thru the plugins
+    for x in range(len(zcore['plugin'])):
+        try:
+            zcore['plugin'][x].plugin_stop_(server)
+        except AttributeError:
+            continue
+    time.sleep(0.1)
+    # close the thread
+    zcore[server, 'thread'] = ''
+    return
+
+# ======================================================================================================================
 # keep_alive()
 # keeps program and IRC connections alive (i.e. this is a main loop)
 async def keep_alive():
@@ -817,6 +834,8 @@ async def keep_alive():
                         zprint(f'[*] Error * Connection to {server[pc]} has been lost. Preparing for reconnection.')
                         zcore[server[pc], 'connected'] = False
                         zcore[server[pc], 'sock'].close()
+                        module_stop(server[pc])
+                        time.sleep(0.1)
                         await re_connect(server[pc])
                 continue
         continue
@@ -1074,7 +1093,12 @@ def err_log(args, filename=''):
         n_file.close()
         return 1
     return 0
-
+# ======================================================================================================================
+# Input controls (terminal)
+# async def bm_input(args):
+#    value = input('Text here > ')
+#    print(value)
+#    return
 
 # ======================================================================================================================
 # Controls for core and remote mounting and unmounting of system and plugin modules
