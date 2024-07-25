@@ -831,11 +831,11 @@ async def keep_alive():
                         zcore[server[pc], 'sock'].send(b'PING :' + bytes(str(zcore['versionid'].upper()), 'utf-8') + b'\r\n')
                         zcore[server[pc], 'keepalive'] = time.time()
                     except ssl.SSLError or socket.gaierror or ConnectionResetError:
-                        zprint(f'[*] Error * Connection to {server[pc]} has been lost. Preparing for reconnection.')
+                        zprint(f'[*] Error * Connection to {server[pc]} has been lost. Preparing for reconnection. Waiting 10 seconds...')
                         zcore[server[pc], 'connected'] = False
                         zcore[server[pc], 'sock'].close()
                         module_stop(server[pc])
-                        time.sleep(0.1)
+                        time.sleep(10)
                         await re_connect(server[pc])
                 continue
         continue

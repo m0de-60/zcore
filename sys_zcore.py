@@ -1149,13 +1149,20 @@ def cnfread(file, section, key):
 
 # write to cnf file lists ----------------------------------------------------------------------------------------------
 def cnfwrite(file, section, key, data):
-    config_object = ConfigParser()
-    config_object.read(file)
-    info = config_object[section]
-    info[key] = data
-    with open(file, 'w') as conf:
-        config_object.write(conf)
+    try:
+        config_object = ConfigParser()
+        config_object.read(file)
+        info = config_object[section]
+        info[key] = data
+        with open(file, 'w') as conf:
+            config_object.write(conf)
+    except KeyError:
+        config = configparser.ConfigParser()
 
+        config[section] = {key: data}
+        with open(file, 'a') as configfile:
+            config.write(configfile)
+    return
 # write to txt files ---------------------------------------------------------------------------------------------------
 def txtwrite(filename, text):
     print(f'{filename}')
@@ -1213,6 +1220,33 @@ def deltok(string, token, char):
             if newstring != '':
                 newstring = newstring + char + data[x]
                 continue
+    return newstring
+
+# Replaces a token in a token string -----------------------------------------------------------------------------------
+# reptok('A,B,C,D', '2', ',', 'X') - Returns "A,B,X,D"
+def reptok(string, x, char, tok):
+    data = string.split(char)
+    newstring = ''
+    for z in range(len(data)):
+        if z == x:
+            if newstring == '':
+                newstring = tok
+                z += 1
+                continue
+            if newstring != '':
+                newstring = newstring + char + tok
+                z += 1
+                continue
+        if z != x:
+            if newstring == '':
+                newstring = data[z]
+                z += 1
+                continue
+            if newstring != '':
+                newstring = newstring + char + data[z]
+                z += 1
+                continue
+        continue
     return newstring
 
 # --[ IRC Functions ]---------------------------------------------------------------------------------------------------
