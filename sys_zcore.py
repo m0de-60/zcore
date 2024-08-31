@@ -1086,6 +1086,11 @@ def bot_sleep(value):
     time.sleep(value)
     return
 
+# cputime() ------------------------------------------------------------------------------------------------------------
+# returns time.time()
+def cputime():
+    return time.time()
+
 # **[ Date and Time Functions ]=========================================================================================
 # Current Date ---------------------------------------------------------------------------------------------------------
 def cdate():
@@ -1097,17 +1102,35 @@ def ctime():
     now = datetime.now()
     return now.strftime("%H:%M:%S")
 
+# Current hour of the day ----------------------------------------------------------------------------------------------
+def chour():
+    now = datetime.now()
+    tok = now.strftime("%H:%M:%S").split(':')
+    return tok[0]
+
 # Current Day of the year ----------------------------------------------------------------------------------------------
 def cday():
     return gettok(str(date.today()), 2, '-')
 
 # Current Week of the year ---------------------------------------------------------------------------------------------
 def cweek():
-    return date.today().isocalendar()[1]
+    return str(date.today().isocalendar()[1])
 
 # Current Month of the year --------------------------------------------------------------------------------------------
 def cmonth():
     return gettok(str(date.today()), 1, '-')
+
+# Current year
+def cyear():
+    return gettok(str(date.today()), 0, '-')
+
+# 1 hour in seconds (3600) ---------------------------------------------------------------------------------------------
+def hour1():
+    return 3600
+
+# 24 hours in seconds (86400) ------------------------------------------------------------------------------------------
+def hour24():
+    return 86400
 
 # **[ File Handling Functions ]=========================================================================================
 # Returns True if file exists, otherwise False -------------------------------------------------------------------------
@@ -1118,6 +1141,11 @@ def isfile(filename):
 # Designed for plugin use in editing text files
 def remfile(filename):
     os.remove(filename)
+    return
+
+# Renames a single file ------------------------------------------------------------------------------------------------
+def renamefile(file, newfile):
+    os.rename(file, newfile)
     return
 
 # deletes specified key from section in cnf file. ----------------------------------------------------------------------
@@ -1170,7 +1198,9 @@ def txtwrite(filename, text):
     file.write(str(text) + '\n')
     file.close()
     return
-# **[ Token String Functions ]==========================================================================================
+# **[ Token List Functions ]==========================================================================================
+# Token Lists are a sequence of data having a collective meaning. Each token is a individual value of data
+# Token Lists are a collection of related data.
 
 # istok(string, token, char) -------------------------------------------------------------------------------------------
 # used by is_on_chan and is_op functions
@@ -1254,14 +1284,33 @@ def reptok(string, x, char, tok):
 # privmsg_(server, target, message) ------------------------------------------------------------------------------------
 # Scripting Function
 # For sending PRIVMSG
+# NOTE: modified this for duckhunt flight text
 def privmsg_(server, target, message):
     global systemdata
-    systemdata[server, 'sock'].send(b'PRIVMSG ' + target + b' :' + bytes(message, 'utf-8') + b'\r\n')
+    try:
+        systemdata[server, 'sock'].send(b'PRIVMSG ' + target + b' :' + bytes(message, 'utf-8') + b'\r\n')
+    # This was added for port-ability in duckhunt project, it allows message syntax to contain bytes b'data'
+    # privmsg_(server, target, b'message text')
+    except TypeError:
+        systemdata[server, 'sock'].send(b'PRIVMSG ' + target + b' :' + message + b'\r\n')  # Added for duckhunt port
+    # This is for an error that occurs when a plugin has a internal timer [?]
+    # This is still being worked on and/or dealt with. [/]
+    except OSError:
+        systemdata[server, 'sock'].close()
 
 # For sending NOTICE
 def notice_(server, target, message):
     global systemdata
-    systemdata[server, 'sock'].send(b'NOTICE ' + target + b' :' + bytes(message, 'utf-8') + b'\r\n')
+    try:
+        systemdata[server, 'sock'].send(b'NOTICE ' + target + b' :' + bytes(message, 'utf-8') + b'\r\n')
+    # This was added for port-ability in duckhunt project, it allows message syntax to contain bytes b'data'
+    # privmsg_(server, target, b'message text')
+    except TypeError:
+        systemdata[server, 'sock'].send(b'NOTICE ' + target + b' :' + message + b'\r\n')  # Added for duckhunt port
+    # This is for an error that occurs when a plugin has a internal timer [?]
+    # This is still being worked on and/or dealt with. [/]
+    except OSError:
+        systemdata[server, 'sock'].close()
 
 # def mode_(threadname, target, mode):
 

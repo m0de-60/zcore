@@ -178,8 +178,8 @@ async def re_connect(serverid):
     zcore[serverid, 'connected'] = False
     zcore[serverid, 'lastlag'] = 'NA'
     zcore[serverid, 'thread'] = ''
-    zprint(f'[*] Preparing to reconnect to {serverid} in 30 seconds...')
-    time.sleep(30)
+    zprint(f'[*] Reconnecting to {serverid} in 60 seconds...')
+    time.sleep(60)
     zcore[serverid, 'keepalive'] = time.time()
     zcore[serverid, 'thread'] = threading.Thread(target=irc_connect, args=(serverid,), daemon=True)
     zcore[serverid, 'thread'].start()
@@ -196,7 +196,8 @@ def irc_connect(serverid):
     try:
         zcore[serverid, 'sock'].connect((str(zcore[serverid, 'serveraddr']), int(zcore[serverid, 'serverport'])))
     except socket.gaierror or ssl.SSLEOFError:
-        zprint(f'[*] Connection attempt to {serverid} failed.')
+        zprint(f'[*] Connection attempt to {serverid} failed. Attempting reconnection in 15 seconds...')
+        time.sleep(15)
         asyncio.run(re_connect(serverid))
         return
     # SSL only
@@ -712,7 +713,14 @@ async def irc_loop(threadname):
                     # --------------------------------------------------------------------------------------------------
                     # QUIT handling
                     # b':Test123!Mibbit@hostmask.net QUIT :Client Quit'
+                    # NEED TO ADD A CHECK FOR EXCESS FLOOD BY THE BOT!
                     if zcore[threadname, 'data'][1] == b'QUIT':
+                        # Excess Flood
+                        # if len(zcore[threadname, 'data']) >= 3 and zcore[threadname, 'data'][2].lower() == b':excess':
+                        #   usr = gettok(zcore[threadname, 'data'][0], 0, b'!').replace(b':', b'')
+                        #   usr = usr.decode()
+                        #   if usr.lower() == zcore[threadname, 'botname'].lower():
+
                         # system module
                         if zcore['system'] != '0':
                             try:
@@ -788,7 +796,7 @@ async def irc_loop(threadname):
 
 # ======================================================================================================================
 # module_stop('serverid'):
-# Stops any plugins on server and its channels in the even of a connection loss/interruption (OSError, SSLError)
+# Stops any plugins on server and its channels in the event of a connection loss/interruption (OSError, SSLError)
 def module_stop(server):
     global zcore
 
@@ -796,11 +804,9 @@ def module_stop(server):
     for x in range(len(zcore['plugin'])):
         try:
             zcore['plugin'][x].plugin_stop_(server)
+            continue
         except AttributeError:
             continue
-    time.sleep(0.1)
-    # close the thread
-    zcore[server, 'thread'] = ''
     return
 
 # ======================================================================================================================
@@ -814,7 +820,7 @@ async def keep_alive():
     # ------------------------------------------------------------------------------------------------------------------
     # main loop
     while 1:
-        time.sleep(0.10)  # quick break then back to work
+        time.sleep(0.01)  # quick break then back to work
         if zcore['mode'] == 'shutdown' or zcore['mode'] == 'reboot':
             break
         for pc in range(len(server)):
@@ -830,12 +836,13 @@ async def keep_alive():
                     try:
                         zcore[server[pc], 'sock'].send(b'PING :' + bytes(str(zcore['versionid'].upper()), 'utf-8') + b'\r\n')
                         zcore[server[pc], 'keepalive'] = time.time()
-                    except ssl.SSLError or socket.gaierror or ConnectionResetError:
-                        zprint(f'[*] Error * Connection to {server[pc]} has been lost. Preparing for reconnection. Waiting 30 seconds...')
+                    except ssl.SSLError or socket.gaierror or ConnectionResetError or OSError:
+                        zprint(f'[*] Error * Connection to {server[pc]} has been lost at {ctime()} on {cdate()}. Preparing for reconnection...')
                         zcore[server[pc], 'connected'] = False
                         zcore[server[pc], 'sock'].close()
                         module_stop(server[pc])
-                        time.sleep(30)
+                        zcore[server[pc], 'thread'].join()
+                        # time.sleep(10)
                         await re_connect(server[pc])
                 continue
         continue
@@ -924,6 +931,7 @@ def shut_down():
         zcore[p_server[x], 'connected'] = False
         zcore[p_server[x], 'sock'].send(b'QUIT :(Powered by zCore)\r\n')
         zcore[p_server[x], 'sock'].close()
+        zcore[p_server[x], 'thread'].join()
         zprint(f'[*] {p_server[x]} disconnected.')
         continue
     zprint(f'[*] Exit complete. Good-bye!')
