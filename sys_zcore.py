@@ -870,8 +870,13 @@ async def ul_edit(threadname, args, chan, user):
     # ul_edit(threadname, 'add', b'#channel', b'username')
     # add user to user list
     if args.lower() == 'add':
-        ul_tnum = int(systemdata[threadname, edchan][edchan])
-        ul_user = systemdata[threadname, edchan][ul_tnum].split(b' ')
+        try:
+            ul_tnum = int(systemdata[threadname, edchan][edchan])
+            ul_user = systemdata[threadname, edchan][ul_tnum].split(b' ')
+        except KeyError:
+            mprint('Found KeyError -------------------------------*********************************')
+            ul_tnum = 1
+            ul_user = systemdata[threadname, edchan][ul_tnum].split(b' ')
         if len(ul_user) >= 40:
             ul_tnum += 1
             systemdata[threadname, edchan][ul_tnum] = user
@@ -1243,6 +1248,8 @@ def deltok(string, token, char):
     for x in range(len(data)):
         if data[x] == token:
             continue
+        if data[x] == '' or data[x] == ' ':
+            continue
         if data[x] != token:
             if newstring == '':
                 newstring = data[x]
@@ -1279,6 +1286,37 @@ def reptok(string, x, char, tok):
         continue
     return newstring
 
+# --[ Nested Token List Functions ] ------------------------------------------------------------------------------------
+# nested tokens? Requires the above sys_zcore Token List functions!
+# string = Token1^SubToken1,Token2^SubToken2,Token3^SubToken3
+
+# Returns true if Token exists as a nested token in string
+# istok_n('string', 'token', ',', '^', 0)
+def istok_n(string, token, sep1, sep2, ext=''):
+    tok = string.split(sep1)
+    tnum = 0
+    if ext != '':
+        tnum = int(ext)
+    for x in range(len(tok)):
+        if gettok(tok[x], tnum, sep2).lower() == token.lower():
+            return True
+        continue
+    return False
+
+# returns data of a nested token by its key name
+# EXAMPLE Username1^56^34.5,Username2^76^23.4,Username3^34^56.7
+# Single Nested Token: Data^Value^Value   # This appears as a normal token string with only 1 string in the nest
+# Multiple Nested Token: Data^Value^Value,Data^Value^Value,Data^Value^Value,etc
+# also requires function gettok()
+# gettok_n('string', 'key', ',', '^', 0, X)
+def gettok_n(string, token, sep1, sep2, ext, xnum):
+    tok = string.split(sep1)
+    tnum = 0
+    if ext != '':
+        tnum = int(ext)
+    for x in range(len(tok)):
+        if gettok(tok[x], tnum, sep2) == token:
+            return gettok(tok[x], int(xnum), sep2)
 # --[ IRC Functions ]---------------------------------------------------------------------------------------------------
 
 # privmsg_(server, target, message) ------------------------------------------------------------------------------------
