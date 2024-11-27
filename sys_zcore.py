@@ -18,6 +18,7 @@ import configparser
 import socket
 import asyncio
 import time
+import math
 import os.path
 import logging
 import random
@@ -1113,6 +1114,17 @@ def chour():
     tok = now.strftime("%H:%M:%S").split(':')
     return tok[0]
 
+# Current minute of the current hour -----------------------------------------------------------------------------------
+def cmin():
+    now = datetime.now()
+    tok = now.strftime("%H:%M:%S").split(':')
+    return tok[1]
+
+# Current Day Name -----------------------------------------------------------------------------------------------------
+def cday_n():
+    dt = datetime.now()
+    return dt.strftime('%A')
+
 # Current Day of the year ----------------------------------------------------------------------------------------------
 def cday():
     return gettok(str(date.today()), 2, '-')
@@ -1136,6 +1148,27 @@ def hour1():
 # 24 hours in seconds (86400) ------------------------------------------------------------------------------------------
 def hour24():
     return 86400
+
+# Convert value into time message --------------------------------------------------------------------------------------
+# Converts a seconds value into X hours X minutes statement
+def timeconvert(tseconds):
+    tsec = hour24() - tseconds
+    ttime = round(tsec)
+    hours = 0
+    # if int(ttime) < 3600:
+    #    hours = 0
+    if int(ttime) >= 3600:
+        hours = int(ttime) / 3600
+    ttime = int(ttime) % int(3600)
+    minutes = int(ttime) / 60
+    seconds = int(ttime) % 60
+    if numtok(str(hours), '.') > 1:
+        hours = gettok(str(hours), 0, '.')
+    if numtok(str(minutes), '.') > 1:
+        minutes = gettok(str(minutes), 0, '.')
+    if numtok(str(seconds), '.') > 1:
+        seconds = gettok(str(seconds), 0, '.')
+    return str(hours) + ' hours ' + str(minutes) + ' minutes ' + str(seconds) + ' seconds'
 
 # **[ File Handling Functions ]=========================================================================================
 # Returns True if file exists, otherwise False -------------------------------------------------------------------------
