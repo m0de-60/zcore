@@ -435,8 +435,9 @@ async def irc_loop(threadname):
                                         time.sleep(0.75)
                                         re_start()
                                 # --------------------------------------------------------------------------------------
+                                # remotely mount system module
                                 # /privmsg botname mount-s modulename
-                                # module must already exist in the zCore directory
+                                # module must already exist in the zCore directory.
                                 if zcore[threadname, 'data'][3].lower() == b':mount-s':
                                     if len(zcore[threadname, 'data']) <= 4:
                                         zcore[threadname, 'sock'].send(b'NOTICE ' + zcore[threadname, 'rusername'].encode() + b' :ERROR: Invalid syntax; Use: /privmsg ' + zcore[threadname, 'botname'].encode() + b' mount-s module_name\r\n')
@@ -444,42 +445,52 @@ async def irc_loop(threadname):
                                     mountname = zcore[threadname, 'data'][4].lower()
                                     mountname = mountname.decode()
                                     mount_s = mod_m(mountname, 'mount-s')
-                                    # S1 module is already mounted
+                                    # S1 - module is already mounted
                                     if mount_s == 's1':
                                         zcore[threadname, 'sock'].send(b'NOTICE ' + zcore[threadname, 'rusername'].encode() + b' :ERROR: Mounting failed; System Module ' + mountname.encode() + b' is already in the System Mount.\r\n')
                                         continue
-                                    # S2 there is already another module in the mount
+                                    # S2 - there is already another module in the mount
                                     if mount_s == 's2':
                                         zcore[threadname, 'sock'].send(b'NOTICE ' + zcore[threadname, 'rusername'].encode() + b' :ERROR: Mounting failed; System Mount is in use by another module.\r\n')
                                         continue
-                                    # S3 system module recognized, and ok to mount
+                                    # S3 - system module recognized, and ok to mount
                                     if mount_s == 's3':
                                         zcore[threadname, 'sock'].send(b'NOTICE ' + zcore[threadname, 'rusername'].encode() + b' :SUCCESS: System Module ' + mountname.encode() + b' successfully mounted to the System Mount. Preparing to reboot.\r\n')
                                         time.sleep(0.75)
                                         re_start()
-                                    # S4 module is not recognized as a system module
+                                    # S4 - module is not recognized as a system module
                                     if mount_s == 's4':
                                         zcore[threadname, 'sock'].send(b'NOTICE ' + zcore[threadname, 'rusername'].encode() + b' :ERROR: Mounting failed; Module ' + mountname.encode() + b' is not recognized as a System Module.\r\n')
                                         continue
-                                    # S5 module not found
+                                    # S5 - module not found
                                     if mount_s == 's5':
                                         zcore[threadname, 'sock'].send(b'NOTICE ' + zcore[threadname, 'rusername'].encode() + b' :ERROR: System Module ' + mountname.encode() + b' not found.\r\n')
                                         continue
+
+                                # --------------------------------------------------------------------------------------
+                                # remotely unmount system module
+                                # /privmsg botname unmount-s modulename
+                                # module must already exist in the zCore directory
                                 if zcore[threadname, 'data'][3].lower() == b':unmount-s':
+
+                                    # invalid syntax
                                     if len(zcore[threadname, 'data']) <= 4:
                                         zcore[threadname, 'sock'].send(b'NOTICE ' + zcore[threadname, 'rusername'].encode() + b' :ERROR: Invalid syntax; Use: /privmsg ' + zcore[threadname, 'botname'].encode() + b' unmount-s module_name\r\n')
                                         continue
                                     mountname = zcore[threadname, 'data'][4].lower()
                                     mountname = mountname.decode()
                                     mount_s = mod_m(mountname, 'unmount-s')
+                                    # S6 - Unmount failed - System mount is currently free.
                                     if mount_s == 's6':
                                         zcore[threadname, 'sock'].send(b'NOTICE ' + zcore[threadname, 'rusername'].encode() + b' :ERROR: Unmount failed; System Mount is currently free.\r\n')
                                         continue
+                                    # S7 - ERROR: Legacy input; Incorrect system module name.
                                     if mount_s == 's7':
                                         zcore[threadname, 'sock'].send(b'NOTICE ' + zcore[threadname, 'rusername'].encode() + b' :ERROR: Legacy input; Incorrect System Module name.\r\n')
                                         continue
+                                    # S8 - SUCCESS: System module Module_Name successfully unmounted from the system mount. Preparing to reboot...
                                     if mount_s == 's8':
-                                        zcore[threadname, 'sock'].send(b'NOTICE ' + zcore[threadname, 'rusername'].encode() + b' :SUCCESS: System Module ' + mountname.encode() + b' successfully unmounted from the System Mount. Preparing to reboot.\r\n')
+                                        zcore[threadname, 'sock'].send(b'NOTICE ' + zcore[threadname, 'rusername'].encode() + b' :SUCCESS: System Module ' + mountname.encode() + b' successfully unmounted from the System Mount. Preparing to reboot...\r\n')
                                         time.sleep(0.75)
                                         re_start()
                     # --------------------------------------------------------------------------------------------------
@@ -519,6 +530,7 @@ async def irc_loop(threadname):
                                     await zcore['system'].exct_privmsg(threadname, zcore[threadname, 'data_line'][x])
                                 except AttributeError:
                                     zcore['dump'] = '0'  # Yep, is it faster?
+
                             # run data in plugin module(s)
                             if zcore['plugins'] != '0':
                                 for p in range(len(zcore['plugin'])):
@@ -533,6 +545,12 @@ async def irc_loop(threadname):
                                             await zcore['plugin'][p].evt_privmsg(threadname, zcore[threadname, 'data_line'][x])
                                         except AttributeError:
                                             zcore['dump'] = '0'  # Of course
+                                        # except SyntaxError or TypeError:
+                                        #    try:
+                                        #        zcore['plugin'][p].evt_privmsg(threadname, zcore[threadname, 'data_line'][x])
+                                        #    except AttributeError:
+                                        #        zcore['dump'] = '0'  # Still works
+
                                     continue
                             continue
                     # ------------------------------------------------------------------------------------------------------
@@ -568,7 +586,7 @@ async def irc_loop(threadname):
                             try:
                                 await zcore['system'].exct_join(threadname, zcore[threadname, 'data_line'][x])
                             except AttributeError:
-                                zcore['dump'] = '0'  # experimental
+                                zcore['dump'] = '0'  # experimental but working so far...
                         if zcore['plugins'] != '0':
                             for p in range(len(zcore['plugin'])):
                                 if zcore['plugin'][p] == '0' or zcore['plugin'][p] == 'E':

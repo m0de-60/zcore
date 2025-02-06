@@ -22,6 +22,7 @@ import math
 import os.path
 import logging
 import random
+# import numpy
 # ======================================================================================================================
 # Global module data map (moduledata for plugins, systemdata for system modules)
 systemdata = {}
@@ -501,7 +502,7 @@ async def exct_privmsg(threadname, recv):
             # !kick <username> (Kick user)
             if udata[3].lower() == b':!kick' and is_op(threadname, udata[2], bytes(systemdata[threadname, 'botname'], 'utf-8')) is True and len(udata) > 4:
                 if udata[4].lower() == username.lower():
-                    mprint(f'{threadname} * !kick authorized: {username.decode()} kicked their own ass...')
+                    mprint(f'{threadname} * !kick authorized: {username.decode()} kicked your own ass...')
                     systemdata[threadname, 'sock'].send(b'KICK ' + udata[2] + b' ' + username + b' :Stop hitting yourself\r\n')
                     return
                 if udata[4].lower() == bytes(systemdata[threadname, 'botname'].lower(), 'utf-8'):
@@ -529,28 +530,33 @@ async def exct_privmsg(threadname, recv):
             if udata[3].lower() == b':!ban' or udata[3].lower() == b':!kb':
                 if is_op(threadname, udata[2], bytes(systemdata[threadname, 'botname'], 'utf-8')) is True and len(udata) > 4:
                     if udata[4].lower() == username.lower():
-                        mprint(f'{threadname} * !ban authorized: {username.decode()} banned themselves...')
-                        systemdata[threadname, 'sock'].send(b'MODE ' + udata[2] + b' +b ' + username + b'\r\n')
-                        systemdata[threadname, 'sock'].send(b'KICK ' + udata[2] + b' ' + username + b' :Well, at that point, ' + username + b' f@#$%ed up.\r\n')
-                        systemdata[threadname, 'sock'].send(b'MODE ' + udata[2] + b' -b ' + username + b'\r\n')
+                        mprint(f'{threadname} * !kickban NOT authorized: {username.decode()} tried to ban yourself...')
+                        systemdata[threadname, 'sock'].send(b'KICK ' + udata[2] + b' ' + username + b' :You tried to ban yourself? ...\r\n')
                         return
                     if udata[4].lower() == bytes(systemdata[threadname, 'botname'].lower(), 'utf-8'):
-                        systemdata[threadname, 'sock'].send(b'PRIVMSG ' + udata[2] + b" :Don't ban the bot...\r\n")
+                        systemdata[threadname, 'sock'].send(b'PRIVMSG ' + udata[2] + b" :Don't kick the bot...\r\n")
                         return
                     if is_on_chan(threadname, udata[2], udata[4]) is False:
                         systemdata[threadname, 'sock'].send(b'PRIVMSG ' + udata[2] + b" :\x01ACTION doesn't see " + udata[4] + b'\r\n')
                         return
-                    banname = udata[4].decode()
-                    banname = banname.lower()
-                    if istok(systemdata['botmasters'], banname, ',') is True:
+                    kickname = udata[4].decode()
+                    kickname = kickname.lower()
+                    if istok(systemdata['botmasters'], kickname, ',') is True:
+                        if istok(systemdata['botmasters'], dusername, ',') is True:
+                            mprint(f'{threadname} * !kickban botmaster authorized: {udata[4].decode()} by {username.decode()} {userhost.decode()}')
+                            systemdata[threadname, 'sock'].send(b'MODE ' + udata[2] + b' +b ' + udata[4] + b'\r\n')
+                            systemdata[threadname, 'sock'].send(b'KICK ' + udata[2] + b' ' + udata[4] + b' :Requested by ' + username + b'\r\n')
+                            return
+                        mprint(f'{threadname} * !kickban botmaster denied: {udata[4].decode()} by {username.decode()} {userhost.decode()} [INSUFFICIENT ACCESS]')
                         systemdata[threadname, 'sock'].send(b'PRIVMSG ' + udata[2] + b' :Access denied.\r\n')
                         return
                     else:
                         # HERE
-                        mprint(f'{threadname} * !ban access authorized: {udata[4].decode()} by {username.decode()} {userhost.decode()}')
+                        mprint(f'{threadname} * !kickban access authorized: {udata[4].decode()} by {username.decode()} {userhost.decode()}')
                         systemdata[threadname, 'sock'].send(b'MODE ' + udata[2] + b' +b ' + udata[4] + b'\r\n')
                         systemdata[threadname, 'sock'].send(b'KICK ' + udata[2] + b' ' + udata[4] + b' :Requested by ' + username + b'\r\n')
                         return
+
             # ----------------------------------------------------------------------------------------------------------
             # !unban <username>
             if udata[3].lower() == b':!unban' and is_op(threadname, udata[2], bytes(systemdata[threadname, 'botname'], 'utf-8')) is True and len(udata) > 4:
@@ -612,7 +618,7 @@ async def exct_join(threadname, recv):
     if username.decode() == systemdata[threadname, 'botname']:
         return
     # add user to the user list
-    await ul_edit(threadname, 'add', udata[2], username)
+    ul_edit(threadname, 'add', udata[2], username)
     # ------------------------------------------------------------------------------------------------------------------
     # Auto Op
     if istok(systemdata['botmasters'], dusername, ',') is True or istok(systemdata[threadname, 'admins'], dusername, ',') is True:
@@ -630,6 +636,7 @@ async def exct_join(threadname, recv):
     # Auto Kick (ban+kick on join)
     if istok(systemdata[threadname, 'akick'], dusername, ',') is True:
         if is_op(threadname, udata[2], bytes(systemdata[threadname, 'botname'], 'utf-8')) is True:
+            ul_edit(threadname, 'rem', udata[2], username)
             systemdata[threadname, 'sock'].send(b'MODE ' + udata[2] + b' +b ' + username + b'\r\n')
             systemdata[threadname, 'sock'].send(b'KICK ' + udata[2] + b' ' + username + b' :AUTO KICK/BAN\r\n')
             return
@@ -645,7 +652,7 @@ async def exct_part(threadname, recv):
     mprint(f'{threadname} * PART {udata[2].decode()} * {username.decode()} {userhost.decode()}')
     if username.decode() == systemdata[threadname, 'botname']:
         return
-    await ul_edit(threadname, 'rem', udata[2], username)
+    ul_edit(threadname, 'rem', udata[2], username)
     return
 # ======================================================================================================================
 # KICK
@@ -661,7 +668,9 @@ async def exct_kick(threadname, recv):
         time.sleep(1.5)
         systemdata[threadname, 'sock'].send(b'JOIN ' + udata[2] + b'\r\n')
     else:
-        await ul_edit(threadname, 'rem', udata[2], udata[3])
+
+        mprint(f'here')
+        ul_edit(threadname, 'rem', udata[2], udata[3])
     return
 # ======================================================================================================================
 # MODE
@@ -714,38 +723,38 @@ async def exct_nick(threadname, recv):
                 continue
             # 'username'
             if istok(systemdata[threadname, nchan][y].lower(), username.lower(), b' ') is True:
-                await ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
-                await ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), newuser)
+                ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
+                ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), newuser)
                 continue
             # '~username'
             elif istok(systemdata[threadname, nchan][y].lower(), b'~' + username.lower(), b' ') is True:
-                await ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
-                await ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'~' + newuser)
+                ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
+                ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'~' + newuser)
                 continue
             # '&username'
             elif istok(systemdata[threadname, nchan][y].lower(), b'&' + username.lower(), b' ') is True:
-                await ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
-                await ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'&' + newuser)
+                ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
+                ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'&' + newuser)
                 continue
             # '!username'
             elif istok(systemdata[threadname, nchan][y].lower(), b'!' + username.lower(), b' ') is True:
-                await ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
-                await ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'!' + newuser)
+                ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
+                ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'!' + newuser)
                 continue
             # '@username'
             elif istok(systemdata[threadname, nchan][y].lower(), b'@' + username.lower(), b' ') is True:
-                await ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
-                await ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'@' + newuser)
+                ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
+                ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'@' + newuser)
                 continue
             # '%username'
             elif istok(systemdata[threadname, nchan][y].lower(), b'%' + username.lower(), b' ') is True:
-                await ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
-                await ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'%' + newuser)
+                ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
+                ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'%' + newuser)
                 continue
             # '+username'
             elif istok(systemdata[threadname, nchan][y].lower(), b'+' + username.lower(), b' ') is True:
-                await ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
-                await ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'+' + newuser)
+                ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
+                ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'+' + newuser)
                 continue
             continue
     return
@@ -775,7 +784,7 @@ async def exct_quit(threadname, recv):
             if y == 0:
                 continue
             if istok(ul_cleaner(systemdata[threadname, qchan][y]).lower(), username.lower(), b' ') is True:
-                await ul_edit(threadname, 'rem', bytes(q_chan[x], 'utf-8'), username)
+                ul_edit(threadname, 'rem', bytes(q_chan[x], 'utf-8'), username)
                 continue
         continue
     return
@@ -861,7 +870,7 @@ def ul_cleaner(ultext):
     return cleaner
 # ======================================================================================================================
 # add or remove a nickname from user list
-async def ul_edit(threadname, args, chan, user):
+def ul_edit(threadname, args, chan, user):
     global systemdata
     edchan = chan.decode()
     edchan = edchan.replace('#', '')
@@ -872,11 +881,14 @@ async def ul_edit(threadname, args, chan, user):
     # add user to user list
     if args.lower() == 'add':
         try:
+            # mprint(f'edchan: {edchan} systemdata[threadname, edchan][edchan]: {systemdata[threadname, edchan][edchan]}')
             ul_tnum = int(systemdata[threadname, edchan][edchan])
+            # mprint(f'ul_edit - ul_tnum: {ul_tnum} edchan: {edchan} Line: 881')
             ul_user = systemdata[threadname, edchan][ul_tnum].split(b' ')
         except KeyError:
-            mprint('Found KeyError -------------------------------*********************************')
+            # mprint('Found KeyError -------------------------------*********************************')
             ul_tnum = 1
+            # mprint(f'USER LIST: {systemdata[threadname, edchan]}')
             ul_user = systemdata[threadname, edchan][ul_tnum].split(b' ')
         if len(ul_user) >= 40:
             ul_tnum += 1
@@ -913,38 +925,38 @@ async def ul_edit(threadname, args, chan, user):
             continue
         return
 # ======================================================================================================================
-# ul_remuser(threadname, chan, user)
+# ul_remuser(threadname, chan, user) #NOT USED
 # only for ul_edit()
-def ul_remuser(threadname, chan, user):
-    global systemdata
-    edchan = chan.decode()
-    edchan = edchan.replace('#', '')
-    edchan = edchan.replace(':', '')
-    edchan = edchan.lower()
-    for x in range(len(systemdata[threadname, edchan])):
-        if x == 0:
-            continue
-        ul = systemdata[threadname, edchan][x]
-        ul = ul_cleaner(ul)
-        if iistok(ul.lower(), user.lower(), b' ') is True:
-            ul_str = systemdata[threadname, edchan][x].split(b' ')
-            ul_n = b''
-            for y in range(len(ul_str)):
-                if ul_cleaner(ul_str[y]).lower() == user.lower():
-                    continue
-                else:
-                    if ul_n == b'':
-                        ul_n = ul_str[y]
-                        continue
-                    else:
-                        ul_n = ul_n + b' ' + ul_str[y]
-                        continue
-            systemdata[threadname, edchan][x] = ul_n
-            # mprint(f'UL_STR: {ul_n} USER: {user}')
-            ul_list(threadname, chan)
-            return
-        continue
-    return
+# def ul_remuser(threadname, chan, user):
+#    global systemdata
+#    edchan = chan.decode()
+#    edchan = edchan.replace('#', '')
+#    edchan = edchan.replace(':', '')
+#    edchan = edchan.lower()
+#    for x in range(len(systemdata[threadname, edchan])):
+#        if x == 0:
+#            continue
+#        ul = systemdata[threadname, edchan][x]
+#        ul = ul_cleaner(ul)
+#        if iistok(ul.lower(), user.lower(), b' ') is True:
+#            ul_str = systemdata[threadname, edchan][x].split(b' ')
+#            ul_n = b''
+#            for y in range(len(ul_str)):
+#                if ul_cleaner(ul_str[y]).lower() == user.lower():
+#                    continue
+#                else:
+#                    if ul_n == b'':
+#                        ul_n = ul_str[y]
+#                        continue
+#                    else:
+#                        ul_n = ul_n + b' ' + ul_str[y]
+#                        continue
+#            systemdata[threadname, edchan][x] = ul_n
+#            # mprint(f'UL_STR: {ul_n} USER: {user}')
+#            ul_list(threadname, chan)
+#            return
+#        continue
+#    return
 # ======================================================================================================================
 # lists userlist for specified channel to screen (testing purposes)
 def ul_list(threadname, chan):
@@ -1078,13 +1090,19 @@ def is_access(threadname, user):
 # percent(50, 5) returns 2.5         50% of 5
 # percent(30, 3) returns 0.9         30% of 3
 def percent(per, value):
-    math = per * value / 100
+    maths = per * value / 100
     # print(f'Percent: {math}')
-    return math
+    return maths
 
 # rand(X, y) -----------------------------------------------------------------------------------------------------------
+# Returns a random number from x to y
 def rand(x, y):
     return random.randint(x, y)
+
+# ceiling(value) -------------------------------------------------------------------------------------------------------
+# Returns math.ceil(data) math ceiling of data
+def ceiling(data):
+    return math.ceiling(data)
 
 # bot_sleep(value) -----------------------------------------------------------------------------------------------------
 # uses time.sleep(value)
@@ -1150,7 +1168,7 @@ def hour24():
     return 86400
 
 # Convert value into time message --------------------------------------------------------------------------------------
-# Converts a seconds value into X hours X minutes statement
+# Converts a seconds value into X hours X minutes X seconds statement
 def timeconvert(tseconds):
     tsec = hour24() - tseconds
     ttime = round(tsec)
@@ -1189,6 +1207,7 @@ def renamefile(file, newfile):
 # deletes specified key from section in cnf file. ----------------------------------------------------------------------
 def cnfdelete(file, section, key):
     config = configparser.ConfigParser()
+    config.optionxform = str
     config.read(file)
     if config.has_option(section, key):
         config.remove_option(section, key)
@@ -1200,6 +1219,7 @@ def cnfdelete(file, section, key):
 # returns true if specified cnf file list and key entry exists. --------------------------------------------------------
 def cnfexists(file, section, key):
     config = configparser.ConfigParser()
+    config.optionxform = str
     config.read(file)
     if config.has_option(section, key):
         return True
@@ -1209,6 +1229,7 @@ def cnfexists(file, section, key):
 # read from cnf file lists ---------------------------------------------------------------------------------------------
 def cnfread(file, section, key):
     config_object = ConfigParser()
+    config_object.optionxform = str
     config_object.read(file)
     info = config_object[section]
     return format(info[key])
@@ -1217,6 +1238,7 @@ def cnfread(file, section, key):
 def cnfwrite(file, section, key, data):
     try:
         config_object = ConfigParser()
+        config_object.optionxform = str
         config_object.read(file)
         info = config_object[section]
         info[key] = data
@@ -1224,7 +1246,7 @@ def cnfwrite(file, section, key, data):
             config_object.write(conf)
     except KeyError:
         config = configparser.ConfigParser()
-
+        config.optionxform = str
         config[section] = {key: data}
         with open(file, 'a') as configfile:
             config.write(configfile)
@@ -1262,7 +1284,7 @@ def iistok(string, token, char):
     return False
 
 # Get specified token from token string --------------------------------------------------------------------------------
-# gettok('A,B,C,D', '2', ',') - Returns "C"
+# gettok('A,B,C,D', 2, ',') - Returns "C"
 def gettok(string, x, char):
     data = string.split(char)
     return data[x]
@@ -1293,7 +1315,7 @@ def deltok(string, token, char):
     return newstring
 
 # Replaces a token in a token string -----------------------------------------------------------------------------------
-# reptok('A,B,C,D', '2', ',', 'X') - Returns "A,B,X,D"
+# reptok('A,B,C,D', 2, ',', 'X') - Returns "A,B,X,D"
 def reptok(string, x, char, tok):
     data = string.split(char)
     newstring = ''
@@ -1338,8 +1360,8 @@ def istok_n(string, token, sep1, sep2, ext=''):
 
 # returns data of a nested token by its key name
 # EXAMPLE Username1^56^34.5,Username2^76^23.4,Username3^34^56.7
-# Single Nested Token: Data^Value^Value   # This appears as a normal token string with only 1 string in the nest
-# Multiple Nested Token: Data^Value^Value,Data^Value^Value,Data^Value^Value,etc
+# Single Nested Token: KeyName^Value^Value   # This appears as a normal token string with only 1 string in the nest
+# Multiple Nested Token: KeyName^Value^Value,KeyName^Value^Value,KeyName^Value^Value,etc
 # also requires function gettok()
 # gettok_n('string', 'key', ',', '^', 0, X)
 def gettok_n(string, token, sep1, sep2, ext, xnum):
@@ -1388,3 +1410,72 @@ def notice_(server, target, message):
 # def kick_(threadname, channel, user, kmsg=''):
 
 # def topic_(threadname, channel, topicmsg):
+
+# ======================================================================================================================
+# i18n Functionality
+# ======================================================================================================================
+# File name will contain i18n and plugin name, and type will be .cnf
+# Example: i18n_duckhunt.cnf
+# Example: i18n_rpg.cnf
+
+# File will contain a library structure as follows:
+
+# [i18n_storage]
+# n0 = Text string here
+# n1 = Another text string here.
+# n2 = Even another text string here.
+# n3 = Etc.....
+
+# Every i18n_storage key must be unique, duplicate or matching keys will cause errors.
+# Using n1, n2, etc is not required, but helps with easy application i18n in zCore plugins.
+# The below function will only retrieve text from the file.
+# Qoutemarks of any kind may cause errors!
+
+# i18n Function --------------------------------------------------------------------------------------------------------
+# i18n('filename.cnf', 'key')
+# This will return the specified text string stored on key from the file, if the file and key exist.
+
+# [i18n_storage]
+# key1 = string 1
+# key2 = string 2
+# key3 = etc...
+
+# i18n('filename.cnf', 'key1', <args=''>)
+def i18n(filename, key, args=''):
+
+    # If file doesn't exist, don't run
+    if isfile(filename) is False:
+        return 0
+
+    # If requested entry doesn't exist, don't run
+    if cnfexists(filename, 'i18n_storage', str(key)) is False:
+        return -1
+
+    # i18n('filename.cnf', 'key1') returns: 'string 1' -----------------------------------------------------------------
+    # Also returns 0: File not found
+    # Also returns -1: Key not found
+    if args == '':
+
+        # Return requested entry
+        return str(cnfread(filename, 'i18n_storage', str(key)))
+
+    # i18n('filename.cnf', 'key1', 'data')
+    # returns the key and if the key has a '//' it will replace '//' with 'data'
+    # Example:
+    #
+    # [i18n_storage]
+    # key1 = string 1
+    # key2 = there are // lights
+    #
+    # i18n('filename.cnf', 'key2', 'four')
+    # Returns: 'there are four lights'
+    #
+    # i18n('filename.cnf', 'key2', '4')
+    # Returns: 'there are 4 lights'
+    if args != '':
+
+        # Return requested entry with text inserted
+        repl = ' ' + str(args) + ' '
+        entry = str(cnfread(filename, 'i18n_storage', str(key)))
+        entry = entry.replace(' // ', repl)
+        return entry
