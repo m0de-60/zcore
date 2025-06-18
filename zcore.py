@@ -70,7 +70,7 @@ async def start_up():
     # !!!zcore module failure/errors will occur with error changes!!!
     zcore['version'] = '0.1x'
     zcore['versionid'] = 'Z3R00N3'
-    zprint(f'[*] RUNNING * zCore version: {zcore['version']} by Neo Nemesis')
+    zprint(f"[*] RUNNING * zCore version: {zcore['version']} by Neo Nemesis")
     # ------------------------------------------------------------------------------------------------------------------
     # Loading system module (if specified in zcore.cnf: [zcore] > system = modulename
     # ONLY 1 SYSTEM MODULE.
@@ -83,7 +83,7 @@ async def start_up():
     # ------------------------------------------------------------------------------------------------------------------
     # System module specified
     else:
-        zprint(f'[*] Checking for system module {zcore['sysmod']}...')
+        zprint(f"[*] Checking for system module {zcore['sysmod']}...")
         time.sleep(0.5)  # sure does
         # module filename.py exists
         if os.path.isfile('./' + zcore['sysmod'] + '.py') is True:
@@ -93,11 +93,11 @@ async def start_up():
                 zcore['system'].system_init_(zcore['version'])
             except AttributeError:
                 zcore['system'] = '0'
-                zprint(f'[*] ERROR * Module failed to load: {zcore['sysmod']} is not recognized as a system module. System mode disabled.')
+                zprint(f"[*] ERROR * Module failed to load: {zcore['sysmod']} is not recognized as a system module. System mode disabled.")
         # module filename.py does not exist
         else:
             zcore['system'] = '0'  # zcore['system'] = 'err1'  system module filename.py is missing
-            zprint(f'[*] ERROR * System module {zcore['sysmod']}.py is not found. System mode disabled.')
+            zprint(f"[*] ERROR * System module {zcore['sysmod']}.py is not found. System mode disabled.")
     # ------------------------------------------------------------------------------------------------------------------
     # check for and load plugins
     # ------------------------------------------------------------------------------------------------------------------
@@ -106,16 +106,16 @@ async def start_up():
         if zcore['system'] == '0':
             zprint(f'[*] Running in idle mode')
     else:
-        zprint(f'[*] {len(zcore['plugin'])} plugin module(s) found.')
+        zprint(f"[*] {len(zcore['plugin'])} plugin module(s) found.")
         plugint = zcore['plugins'].split(',')
         time.sleep(0.5)
         for x in range(len(zcore['plugin'])):
             if os.path.isfile('./' + zcore['plugin'][x] + '.py') is True:
-                zprint(f'[*] Attempting to load: {zcore['plugin'][x]}')
+                zprint(f"[*] Attempting to load: {zcore['plugin'][x]}")
                 zcore['plugin'][x] = __import__(zcore['plugin'][x])
                 try:
                     if zcore['sysmod'] != zcore['plugin'][x].system_req_():
-                        zprint(f'[*] ERROR * System Module: Plugin Module {plugint[x]} requires System Module {zcore['plugin'][x].system_req_()}. Module skipped...')
+                        zprint(f"[*] ERROR * System Module: Plugin Module {plugint[x]} requires System Module {zcore['plugin'][x].system_req_()}. Module skipped...")
                         zcore['plugin'][x] = '0'
                         continue
                 except AttributeError:
@@ -245,16 +245,16 @@ async def irc_loop(threadname):
                 # received ping from server, send pong reply
                 if zcore[threadname, 'data'][0] == b'PING':
                     zcore[threadname, 'keepalive'] = time.time()
-                    zprint(f'[*] {threadname} ---> Ping? {zcore[threadname, 'data'][1]}')
+                    zprint(f"[*] {threadname} ---> Ping? {zcore[threadname, 'data'][1]}")
                     zcore[threadname, 'sock'].send(b'PONG ' + zcore[threadname, 'data'][1] + b'\r\n')
-                    zprint(f'[*] {zcore[threadname, 'botname']} ---> {threadname} Pong! {zcore[threadname, 'data'][1]}')
+                    zprint(f"[*] {zcore[threadname, 'botname']} ---> {threadname} Pong! {zcore[threadname, 'data'][1]}")
                     continue
                 # received pong reply from ping sent to server
                 # keep alive pong and lag timer
                 if zcore[threadname, 'data'][1] == b'PONG':
                     zcore['keepalive', 'math'] = round(time.time() - zcore[threadname, 'keepalive'], 2)
                     zcore[threadname, 'lastlag'] = zcore['keepalive', 'math']
-                    zprint(f'[*] {threadname} ---> PONG (KeepAlive) Lag: {zcore['keepalive', 'math']} seconds')
+                    zprint(f"[*] {threadname} ---> PONG (KeepAlive) Lag: {zcore['keepalive', 'math']} seconds")
                     continue
                 # --------------------------------------------------------------------------------------------------
                 # connection successful, raw 001 welcome message
@@ -266,7 +266,7 @@ async def irc_loop(threadname):
                     # join channels
                     zcore[threadname, 'chan'] = zcore[threadname, 'channels'].split(',')
                     for y in range(len(zcore[threadname, 'chan'])):
-                        zprint(f'[*] {threadname} joining {zcore[threadname, 'chan'][y]}...')
+                        zprint(f"[*] {threadname} joining {zcore[threadname, 'chan'][y]}...")
                         zcore[threadname, 'sock'].send(b'JOIN ' + bytes(str(zcore[threadname, 'chan'][y]), 'utf-8') + b'\r\n')
                         continue
                     continue
@@ -292,7 +292,7 @@ async def irc_loop(threadname):
                     # --------------------------------------------------------------------------------------------------
                     # failsafe prints data to screen if no modules or plugins are loaded
                     if zcore['plugins'] == '0' and zcore['system'] == '0':
-                        zprint(f'[*] {threadname} ---> {zcore[threadname, 'data_line'][x]}')
+                        zprint(f"[*] {threadname} ---> {zcore[threadname, 'data_line'][x]}")
                     # --------------------------------------------------------------------------------------------------
                     if zcore[threadname, 'data'][1] == b'PRIVMSG':
                         # PRIVMSG :\x01 (CTCP)
@@ -300,25 +300,25 @@ async def irc_loop(threadname):
                         zcore[threadname, 'rusername'] = b''
                         if zcore[threadname, 'data'][3].upper() == b':\x01VERSION\x01':
                             zcore[threadname, 'rusername'] = gettok(zcore[threadname, 'data'][0], 0, b'!').replace(b':', b'')
-                            zprint(f'[*] {threadname} * {zcore[threadname, 'rusername'].decode()} ---> CTCP VERSION REQUEST')
+                            zprint(f"[*] {threadname} * {zcore[threadname, 'rusername'].decode()} ---> CTCP VERSION REQUEST")
                             zcore[threadname, 'sock'].send(b'NOTICE ' + zcore[threadname, 'rusername'] + b' :\x01VERSION zCore (ZeroOne) version ' + bytes(str(zcore['version']), 'utf-8') + b' (Running: ' + bytes(str(zcore['versionid']), 'utf-8') + b')\x01\r\n')
                             continue
                         # CTCP Finger
                         if zcore[threadname, 'data'][3].upper() == b':\x01FINGER\x01':
                             zcore[threadname, 'rusername'] = gettok(zcore[threadname, 'data'][0], 0, b'!').replace(b':', b'')
-                            zprint(f'[*] {threadname} * {zcore[threadname, 'rusername'].decode()} ---> CTCP FINGER REQUEST')
+                            zprint(f"[*] {threadname} * {zcore[threadname, 'rusername'].decode()} ---> CTCP FINGER REQUEST")
                             zcore[threadname, 'sock'].send(b'NOTICE ' + zcore[threadname, 'rusername'] + b' :\x01FINGER zCore (ZeroOne) version ' + bytes(str(zcore['version']), 'utf-8') + b' (Running: ' + bytes(str(zcore['versionid']), 'utf-8') + b')\x01\r\n')
                             continue
                         # CTCP vid (zcore only) also works for CLIENTINFO
                         if zcore[threadname, 'data'][3].upper() == b':\x01VERSIONID\x01' or zcore[threadname, 'data'][3].upper() == b':\x01VID\x01' or zcore[threadname, 'data'][3].upper() == b':\x01CLIENTINFO\x01':
                             zcore[threadname, 'rusername'] = gettok(zcore[threadname, 'data'][0], 0, b'!').replace(b':', b'')
-                            zprint(f'[*] {threadname} * {zcore[threadname, 'rusername'].decode()} ---> zcore VERSIONID REQUEST [VID]')
+                            zprint(f"[*] {threadname} * {zcore[threadname, 'rusername'].decode()} ---> zcore VERSIONID REQUEST [VID]")
                             zcore[threadname, 'sock'].send(b'NOTICE ' + zcore[threadname, 'rusername'] + b' :\x01VERSION zCore (ZeroOne)' + bytes(str(zcore['version']), 'utf-8') + b' by Neo Nemesis (C) Mode60 2024 - ' + bytes(str(zcore['versionid']), 'utf-8') + b' is powered by zCore a GNU 3.0 licensed FOSS python modular IRC bot core.\x01\r\n')
                             continue
                         # CTCP Ping
                         if zcore[threadname, 'data'][3].upper() == b':\x01PING':
                             zcore[threadname, 'rusername'] = gettok(zcore[threadname, 'data'][0], 0, b'!').replace(b':', b'')
-                            zprint(f'[*] {threadname} * {zcore[threadname, 'rusername'].decode()} ---> CTCP PING {zcore[threadname, 'data'][4].decode()}')
+                            zprint(f"[*] {threadname} * {zcore[threadname, 'rusername'].decode()} ---> CTCP PING {zcore[threadname, 'data'][4].decode()}")
                             zcore[threadname, 'sock'].send(b'NOTICE ' + zcore[threadname, 'rusername'] + b' :\x01PING ' + zcore[threadname, 'data'][4] + b'\r\n')
                             continue
                         # ----------------------------------------------------------------------------------------------
@@ -331,12 +331,12 @@ async def irc_loop(threadname):
                             if b'#' in zcore[threadname, 'data'][2]:
                                 # !shutdown
                                 if zcore[threadname, 'data'][3].lower() == b':!shutdown':
-                                    zprint(f'[*] Shutdown command issued by: {zcore[threadname, 'rusername']}')
+                                    zprint(f"[*] Shutdown command issued by: {zcore[threadname, 'rusername']}")
                                     zcore['mode'] = 'shutdown'
                                     break
                                 # !restart/!reboot
                                 if zcore[threadname, 'data'][3].lower() == b':!restart' or zcore[threadname, 'data'][3].lower() == b':!reboot':
-                                    zprint(f'[*] Reboot command issued by: {zcore[threadname, 'rusername']}')
+                                    zprint(f"[*] Reboot command issued by: {zcore[threadname, 'rusername']}")
                                     re_start()
                                     break
                                 # !test (disable before release)
@@ -364,7 +364,7 @@ async def irc_loop(threadname):
                                 if zcore[threadname, 'data'][3].lower() == b':clear-err-log':
                                     err_log('clear')
                                     zcore[threadname, 'sock'].send(b'NOTICE ' + zcore[threadname, 'rusername'].encode() + b' :Error log zcorelog.txt has been cleared.\r\n')
-                                    zprint(f'[*] zcorelog.txt has been cleared by {zcore[threadname, 'rusername']} {cdate()} {ctime()}')
+                                    zprint(f"[*] zcorelog.txt has been cleared by {zcore[threadname, 'rusername']} {cdate()} {ctime()}")
                                     continue
                                 # /privmsg botname save-err-log <filename.txt>
                                 # Save current zcorelog.txt as <filename.txt> for back up purposes
@@ -386,7 +386,7 @@ async def irc_loop(threadname):
                                             continue
                                         err_log('save', f_name)
                                         zcore[threadname, 'sock'].send(b'NOTICE ' + zcore[threadname, 'rusername'].encode() + b' :Current error log file has been saved as ' + f_name.encode() + b' in the zCore directory.\r\n')
-                                        zprint(f'[*] zcorelog.txt has been copied as {f_name} {cdate()} {ctime()}')
+                                        zprint(f"[*] zcorelog.txt has been copied as {f_name} {cdate()} {ctime()}")
                                 # --------------------------------------------------------------------------------------
                                 # /privmsg botname mount-p modulename
                                 if zcore[threadname, 'data'][3].lower() == b':mount-p':
@@ -512,7 +512,7 @@ async def irc_loop(threadname):
                                         continue
                                     if zcore['plugin'][p] == 'err':
                                         zcore['plugin'][p] = 'E'
-                                        zprint(f'[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.')
+                                        zprint(f"[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.")
                                         continue
                                     elif zcore['plugin'][p] != 'err':
                                         try:
@@ -538,7 +538,7 @@ async def irc_loop(threadname):
                                         continue
                                     if zcore['plugin'][p] == 'err':
                                         zcore['plugin'][p] = 'E'
-                                        zprint(f'[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.')
+                                        zprint(f"[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.")
                                         continue
                                     else:
                                         try:
@@ -569,7 +569,7 @@ async def irc_loop(threadname):
                                     continue
                                 if zcore['plugin'][p] == 'err':
                                     zcore['plugin'][p] = 'E'
-                                    zprint(f'[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.')
+                                    zprint(f"[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.")
                                     continue
                                 elif zcore['plugin'][p] != 'err':
                                     try:
@@ -593,7 +593,7 @@ async def irc_loop(threadname):
                                     continue
                                 if zcore['plugin'][p] == 'err':
                                     zcore['plugin'][p] = 'E'
-                                    zprint(f'[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.')
+                                    zprint(f"[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.")
                                     continue
                                 elif zcore['plugin'][p] != 'err':
                                     try:
@@ -617,7 +617,7 @@ async def irc_loop(threadname):
                                     continue
                                 if zcore['plugin'][p] == 'err':
                                     zcore['plugin'][p] = 'E'
-                                    zprint(f'[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.')
+                                    zprint(f"[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.")
                                     continue
                                 elif zcore['plugin'][p] != 'err':
                                     try:
@@ -642,7 +642,7 @@ async def irc_loop(threadname):
                                     continue
                                 if zcore['plugin'][p] == 'err':
                                     zcore['plugin'][p] = 'E'
-                                    zprint(f'[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.')
+                                    zprint(f"[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.")
                                     continue
                                 elif zcore['plugin'][p] != 'err':
                                     try:
@@ -669,7 +669,7 @@ async def irc_loop(threadname):
                                     continue
                                 if zcore['plugin'][p] == 'err':
                                     zcore['plugin'][p] = 'E'
-                                    zprint(f'[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.')
+                                    zprint(f"[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.")
                                     continue
                                 elif zcore['plugin'][p] != 'err':
                                     try:
@@ -694,7 +694,7 @@ async def irc_loop(threadname):
                                     continue
                                 if zcore['plugin'][p] == 'err':
                                     zcore['plugin'][p] = 'E'
-                                    zprint(f'[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.')
+                                    zprint(f"[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.")
                                     continue
                                 elif zcore['plugin'][p] != 'err':
                                     try:
@@ -719,7 +719,7 @@ async def irc_loop(threadname):
                                     continue
                                 if zcore['plugin'][p] == 'err':
                                     zcore['plugin'][p] = 'E'
-                                    zprint(f'[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.')
+                                    zprint(f"[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.")
                                     continue
                                 elif zcore['plugin'][p] != 'err':
                                     try:
@@ -751,7 +751,7 @@ async def irc_loop(threadname):
                                     continue
                                 if zcore['plugin'][p] == 'err':
                                     zcore['plugin'][p] = 'E'
-                                    zprint(f'[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.')
+                                    zprint(f"[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.")
                                     continue
                                 elif zcore['plugin'][p] != 'err':
                                     try:
@@ -777,7 +777,7 @@ async def irc_loop(threadname):
                                     continue
                                 if zcore['plugin'][p] == 'err':
                                     zcore['plugin'][p] = 'E'
-                                    zprint(f'[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.')
+                                    zprint(f"[*] ERROR * Plugin failure: {zcore['plugin'][p]} Plugin shut down.")
                                     continue
                                 elif zcore['plugin'][p] != 'err':
                                     try:
@@ -800,7 +800,7 @@ async def irc_loop(threadname):
                 # ------------------------------------------------------------------------------------------------------
                 # failsafe prints data to screen if no modules or plugins are loaded
                 # if zcore['plugins'] == '0' and zcore['system'] == '0' and len(zcore[threadname, 'data']) > 2:
-                #    zprint(f'[*] {threadname} ---> {zcore[threadname, 'data_line'][x]}')
+                #    zprint(f"[*] {threadname} ---> {zcore[threadname, 'data_line'][x]}")
                 continue
         continue
     # ------------------------------------------------------------------------------------------------------------------
@@ -850,7 +850,7 @@ async def keep_alive():
                 if zcore[server[pc], 'connected'] is True or zcore[server[pc], 'connected'] == 'Try':
                     # as above in irc_loop() this is for random SSL EOF error handling (See exception below)
                     # need to add try/except for ssl errors and socket errors
-                    zprint(f'[*] {zcore[server[pc], 'botname']} ---> {server[pc]} PING (KeepAlive)')
+                    zprint(f"[*] {zcore[server[pc], 'botname']} ---> {server[pc]} PING (KeepAlive)")
                     try:
                         zcore[server[pc], 'sock'].send(b'PING :' + bytes(str(zcore['versionid'].upper()), 'utf-8') + b'\r\n')
                         zcore[server[pc], 'keepalive'] = time.time()
@@ -991,11 +991,11 @@ async def plugin_load_(spec):
         for x in range(len(zcore['plugin'])):
             # ------------------------------------------------------------------------------------------------------
             # verify that filename.py for plugin exists in script directory
-            zprint(f'[*] Searching for plugin module: {zcore['plugin'][x]}...')
+            zprint(f"[*] Searching for plugin module: {zcore['plugin'][x]}...")
             # ------------------------------------------------------------------------------------------------------
             # file exists
             if os.path.isfile('./' + zcore['plugin'][x].lower() + '.py') is True:
-                zprint(f'[*] Found {zcore['plugin'][x]}, attempting to load plugin module...')
+                zprint(f"[*] Found {zcore['plugin'][x]}, attempting to load plugin module...")
                 # import module[x]
                 zcore['plugin'][x] = __import__(zcore['plugin'][x].lower())
                 try:
@@ -1004,13 +1004,13 @@ async def plugin_load_(spec):
                 except AttributeError:
                     zcore['plugin'][x] = 'err'
                     zprint(f'[*] ERROR * Plugin module failed to load: Plugin not recognized.')
-                # zprint(f'MNAME: {zcore['plugin'][x].systemdata['mname']}')
+                # zprint(f"MNAME: {zcore['plugin'][x].systemdata['mname']}")
                 finally:
                     continue
             # ------------------------------------------------------------------------------------------------------
             # file does not exist
             else:
-                zprint(f'[*] ERROR * Plugin module failed to load: Unable to locate plugin module {zcore['plugin'][x]}.')
+                zprint(f"[*] ERROR * Plugin module failed to load: Unable to locate plugin module {zcore['plugin'][x]}.")
                 zcore['plugin'][x] = 'err'
                 continue
         # --------------------------------------------------------------------------------------------------------------

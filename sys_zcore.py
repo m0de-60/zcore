@@ -24,7 +24,7 @@ import logging
 import random
 # import numpy
 # ======================================================================================================================
-# Global module data map (moduledata for plugins, systemdata for system modules)
+# Global module data map (mdata for plugins, systemdata for system modules)
 systemdata = {}
 # filename = './log.txt'
 logging.basicConfig(filename='./zcorelog.txt', level=logging.DEBUG)  # For debug logging
@@ -114,17 +114,17 @@ def system_init_(zcoreversion):
     if systemdata['mreqver'] != '*.*':
         # version does not match
         if zcoreversion not in systemdata['vdata']:
-            mprint(f'{systemdata['mname']} * Version requirement does not match.')
-            mprint(f'{systemdata['mname']} * Version {systemdata['mversion']} loaded but may produce errors.')
+            mprint(f"{systemdata['mname']} * Version requirement does not match.")
+            mprint(f"{systemdata['mname']} * Version {systemdata['mversion']} loaded but may produce errors.")
         # version check ok
         else:
-            mprint(f'{systemdata['mname']} * Version {systemdata['mversion']} loaded successfully.')
+            mprint(f"{systemdata['mname']} * Version {systemdata['mversion']} loaded successfully.")
     # version check bypass (experimental)
     if systemdata['mreqver'] == '*.*':
-        mprint(f'{systemdata['mname']} * Version requirement byapssed, continuing...')
-        mprint(f'{systemdata['mname']} * Version {systemdata['mversion']} loaded.')
+        mprint(f"{systemdata['mname']} * Version requirement byapssed, continuing...")
+        mprint(f"{systemdata['mname']} * Version {systemdata['mversion']} loaded.")
         # return
-    mprint(f'{systemdata['mname']} * Author: {systemdata['mauthor']}')
+    mprint(f"{systemdata['mname']} * Author: {systemdata['mauthor']}")
 
 # ======================================================================================================================
 # socket_stage(threadname, sock)
@@ -320,12 +320,12 @@ async def exct_privmsg(threadname, recv):
 
         # --------------------------------------------------------------------------------------------------------------
         # print
-        mprint(f'{threadname} ---> {username.decode()} {recv.replace(udata[0] + b' ' + udata[1] + b' ' + udata[2] + b' ', udata[1] + b' ')}')
+        mprint(f"{threadname} ---> {username.decode()} {recv.replace(udata[0] + b' ' + udata[1] + b' ' + udata[2] + b' ', udata[1] + b' ')}")
     # ------------------------------------------------------------------------------------------------------------------
     # Channel Messages
     else:
         # print
-        mprint(f'{threadname} ---> {username.decode()} {recv.replace(udata[0] + b' ', b'')}')
+        mprint(f"{threadname} ---> {username.decode()} {recv.replace(udata[0] + b' ', b'')}")
         # --------------------------------------------------------------------------------------------------------------
         # !slap - originally used for testing is_on_chan function
         if udata[3].lower() == b':!slap' and len(udata) > 4:
@@ -573,9 +573,9 @@ async def exct_action(threadname, recv):
     username = gettok(udata[0], 0, b'!').replace(b':', b'')
     # main module print for PRIVMSG :\x01ACTION
     if udata[2].decode() == systemdata[threadname, 'botname']:
-        mprint(f'{threadname} ---> {username.decode()} {recv.replace(udata[0] + b' ' + udata[1] + b' ' + udata[2] + b' ', udata[1] + b' ')}')
+        mprint(f"{threadname} ---> {username.decode()} {recv.replace(udata[0] + b' ' + udata[1] + b' ' + udata[2] + b' ', udata[1] + b' ')}")
     else:
-        mprint(f'{threadname} ---> {username.decode()} {recv.replace(udata[0] + b' ', b'')}')
+        mprint(f"{threadname} ---> {username.decode()} {recv.replace(udata[0] + b' ', b'')}")
     return
 # ======================================================================================================================
 # NOTICE chan/user
@@ -595,9 +595,9 @@ async def exct_notice(threadname, recv):
         return
     # main module print for NOTICE
     if udata[2].decode() == systemdata[threadname, 'botname']:
-        mprint(f'{threadname} ---> {username.decode()} {recv.replace(udata[0] + b' ' + udata[1] + b' ' + udata[2] + b' ', udata[1] + b' ')}')
+        mprint(f"{threadname} ---> {username.decode()} {recv.replace(udata[0] + b' ' + udata[1] + b' ' + udata[2] + b' ', udata[1] + b' ')}")
     else:
-        mprint(f'{threadname} ---> {username.decode()} {recv.replace(udata[0] + b' ', b'')}')
+        mprint(f"{threadname} ---> {username.decode()} {recv.replace(udata[0] + b' ', b'')}")
     return
 # ======================================================================================================================
 # JOIN
@@ -701,7 +701,7 @@ async def exct_topic(threadname, recv):
     global systemdata
     udata = recv.split(b' ')
     username = gettok(udata[0], 0, b'!').replace(b':', b'')
-    mprint(f'{threadname} * {username.decode()} ---> {recv.replace(udata[0] + b' ', b'')}')
+    mprint(f"{threadname} * {username.decode()} ---> {recv.replace(udata[0] + b' ', b'')}")
     return
 # ======================================================================================================================
 # NICK
@@ -712,7 +712,7 @@ async def exct_nick(threadname, recv):
     udata = recv.split(b' ')
     username = gettok(udata[0], 0, b'!').replace(b':', b'')
     newuser = udata[2].replace(b':', b'')
-    mprint(f'{threadname} * NICK {username.decode()} ---> {udata[2].replace(b':', b'')}')
+    mprint(f"{threadname} * NICK {username.decode()} ---> {udata[2].replace(b':', b'')}")
     n_chan = systemdata[threadname, 'channels'].split(',')
     # Either do this or spam /NAMES on every channel that user is in?
     for x in range(len(n_chan)):
@@ -771,7 +771,7 @@ async def exct_quit(threadname, recv):
     global systemdata
     udata = recv.split(b' ')
     username = gettok(udata[0], 0, b'!').replace(b':', b'')
-    mprint(f'{threadname} * {username.decode()} ---> {recv.replace(udata[0] + b' ', b'')}')
+    mprint(f"{threadname} * {username.decode()} ---> {recv.replace(udata[0] + b' ', b'')}")
     # This is for QUIT Changing Host
     if udata[2].lower() == b':changing' and udata[3].lower() == b'host':
         systemdata[threadname, 'changehost'] = username
@@ -1102,13 +1102,19 @@ def rand(x, y):
 # ceiling(value) -------------------------------------------------------------------------------------------------------
 # Returns math.ceil(data) math ceiling of data
 def ceiling(data):
-    return math.ceiling(data)
+    return math.ceil(data)
 
 # bot_sleep(value) -----------------------------------------------------------------------------------------------------
 # uses time.sleep(value)
 def bot_sleep(value):
     time.sleep(value)
     return
+
+# hconv(value) ----------------------------------------------------------------------------------------------------
+# converts hours 'value' into seconds
+def hconv(value):
+    data = value * 3600
+    return data
 
 # cputime() ------------------------------------------------------------------------------------------------------------
 # returns time.time()
@@ -1163,18 +1169,35 @@ def cyear():
 def hour1():
     return 3600
 
+# 2 hours in seconds (7200) --------------------------------------------------------------------------------------------
+def hour2():
+    return 7200
+
+# 6 hours in seconds (21600) -------------------------------------------------------------------------------------------
+def hour6():
+    return 21600
+
+# 8 hours in seconds (28800) -------------------------------------------------------------------------------------------
+def hour8():
+    return 28800
+
 # 24 hours in seconds (86400) ------------------------------------------------------------------------------------------
 def hour24():
     return 86400
 
 # Convert value into time message --------------------------------------------------------------------------------------
 # Converts a seconds value into X hours X minutes X seconds statement
-def timeconvert(tseconds):
-    tsec = hour24() - tseconds
+# args should be a integer of how many hours, if no args specified default is 24 hours
+def timeconvert(tseconds, args=''):
+    if args != '':
+        argnum = int(args) * 3600
+        tsec = argnum - tseconds
+    else:
+        tsec = hour24() - tseconds
     ttime = round(tsec)
     hours = 0
-    # if int(ttime) < 3600:
-    #    hours = 0
+    if int(ttime) < 3600:
+        hours = 0
     if int(ttime) >= 3600:
         hours = int(ttime) / 3600
     ttime = int(ttime) % int(3600)
