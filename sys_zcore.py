@@ -95,7 +95,6 @@ def system_init_(zcoreversion):
             for y in range(len(s_channel)):
                 s_chan = s_channel[y].replace('#', '')
                 systemdata[s_server, s_chan] = {}
-                systemdata[s_server, s_chan][s_chan] = 0
                 continue
         systemdata[systemdata['server'][x], 'admins'] = cnfread('zcore.cnf', systemdata['server'][x], 'admin').lower()
         systemdata[systemdata['server'][x], 'access'] = cnfread('zcore.cnf', systemdata['server'][x], 'access').lower()
@@ -618,7 +617,7 @@ async def exct_join(threadname, recv):
     if username.decode() == systemdata[threadname, 'botname']:
         return
     # add user to the user list
-    ul_edit(threadname, 'add', udata[2], username)
+    ul_edit(threadname, 'add', udata[2].decode(), username.decode())
     # ------------------------------------------------------------------------------------------------------------------
     # Auto Op
     if istok(systemdata['botmasters'], dusername, ',') is True or istok(systemdata[threadname, 'admins'], dusername, ',') is True:
@@ -636,7 +635,7 @@ async def exct_join(threadname, recv):
     # Auto Kick (ban+kick on join)
     if istok(systemdata[threadname, 'akick'], dusername, ',') is True:
         if is_op(threadname, udata[2], bytes(systemdata[threadname, 'botname'], 'utf-8')) is True:
-            ul_edit(threadname, 'rem', udata[2], username)
+            ul_edit(threadname, 'rem', udata[2].decode(), username.decode())
             systemdata[threadname, 'sock'].send(b'MODE ' + udata[2] + b' +b ' + username + b'\r\n')
             systemdata[threadname, 'sock'].send(b'KICK ' + udata[2] + b' ' + username + b' :AUTO KICK/BAN\r\n')
             return
@@ -652,7 +651,7 @@ async def exct_part(threadname, recv):
     mprint(f'{threadname} * PART {udata[2].decode()} * {username.decode()} {userhost.decode()}')
     if username.decode() == systemdata[threadname, 'botname']:
         return
-    ul_edit(threadname, 'rem', udata[2], username)
+    ul_edit(threadname, 'rem', udata[2].decode(), username.decode())
     return
 # ======================================================================================================================
 # KICK
@@ -668,9 +667,7 @@ async def exct_kick(threadname, recv):
         time.sleep(1.5)
         systemdata[threadname, 'sock'].send(b'JOIN ' + udata[2] + b'\r\n')
     else:
-
-        mprint(f'here')
-        ul_edit(threadname, 'rem', udata[2], udata[3])
+        ul_edit(threadname, 'rem', udata[2].decode(), udata[3].decode())
     return
 # ======================================================================================================================
 # MODE
@@ -690,7 +687,6 @@ async def exct_mode(threadname, recv):
         mchan = mchan.replace('#', '')
         mchan = mchan.lower()
         systemdata[threadname, mchan] = {}
-        systemdata[threadname, mchan][mchan] = 0
         systemdata[threadname, 'sock'].send(b'NAMES ' + udata[2] + b'\r\n')
     return
 # ======================================================================================================================
@@ -712,51 +708,28 @@ async def exct_nick(threadname, recv):
     udata = recv.split(b' ')
     username = gettok(udata[0], 0, b'!').replace(b':', b'')
     newuser = udata[2].replace(b':', b'')
-    mprint(f"{threadname} * NICK {username.decode()} ---> {udata[2].replace(b':', b'')}")
+    dusername = username.decode()
+    dnewuser = newuser.decode()
+    mprint(f"{threadname} * NICK {dusername} ---> {dnewuser}")
     n_chan = systemdata[threadname, 'channels'].split(',')
-    # Either do this or spam /NAMES on every channel that user is in?
     for x in range(len(n_chan)):
         nchan = n_chan[x].replace('#', '')
-        nchan = nchan.lower()
-        for y in range(len(systemdata[threadname, nchan])):
-            if y == 0:
-                continue
-            # 'username'
-            if istok(systemdata[threadname, nchan][y].lower(), username.lower(), b' ') is True:
-                ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
-                ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), newuser)
-                continue
-            # '~username'
-            elif istok(systemdata[threadname, nchan][y].lower(), b'~' + username.lower(), b' ') is True:
-                ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
-                ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'~' + newuser)
-                continue
-            # '&username'
-            elif istok(systemdata[threadname, nchan][y].lower(), b'&' + username.lower(), b' ') is True:
-                ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
-                ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'&' + newuser)
-                continue
-            # '!username'
-            elif istok(systemdata[threadname, nchan][y].lower(), b'!' + username.lower(), b' ') is True:
-                ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
-                ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'!' + newuser)
-                continue
-            # '@username'
-            elif istok(systemdata[threadname, nchan][y].lower(), b'@' + username.lower(), b' ') is True:
-                ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
-                ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'@' + newuser)
-                continue
-            # '%username'
-            elif istok(systemdata[threadname, nchan][y].lower(), b'%' + username.lower(), b' ') is True:
-                ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
-                ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'%' + newuser)
-                continue
-            # '+username'
-            elif istok(systemdata[threadname, nchan][y].lower(), b'+' + username.lower(), b' ') is True:
-                ul_edit(threadname, 'rem', bytes(n_chan[x], 'utf-8'), username)
-                ul_edit(threadname, 'add', bytes(n_chan[x], 'utf-8'), b'+' + newuser)
+        lkl = '~ ! @ % + ^ -'
+        lk = lkl.split(' ')
+        for y in range(len(lk)):
+            try:
+                if systemdata[threadname, nchan][dusername] == 1:
+                    ul_edit(threadname, 'rem', nchan, dusername)
+                    ul_edit(threadname, 'add', nchan, dnewuser)
+                    break
+                if systemdata[threadname, nchan][lk[y] + dusername] == 1:
+                    ul_edit(threadname, 'rem', nchan, lk[y] + dusername)
+                    ul_edit(threadname, 'add', nchan, lk[y] + dnewuser)
+                    break
+            except KeyError:
                 continue
             continue
+        continue
     return
 # ======================================================================================================================
 # QUIT
@@ -771,6 +744,7 @@ async def exct_quit(threadname, recv):
     global systemdata
     udata = recv.split(b' ')
     username = gettok(udata[0], 0, b'!').replace(b':', b'')
+    dusername = username.decode()
     mprint(f"{threadname} * {username.decode()} ---> {recv.replace(udata[0] + b' ', b'')}")
     # This is for QUIT Changing Host
     if udata[2].lower() == b':changing' and udata[3].lower() == b'host':
@@ -779,13 +753,17 @@ async def exct_quit(threadname, recv):
     q_chan = systemdata[threadname, 'channels'].split(',')
     for x in range(len(q_chan)):
         qchan = q_chan[x].replace('#', '')
-        qchan = qchan.lower()
-        for y in range(len(systemdata[threadname, qchan])):
-            if y == 0:
+        lkl = '~ ! @ % + ^ -'
+        lk = lkl.split(' ')
+        for y in range(len(lk)):
+            try:
+                if systemdata[threadname, qchan][lk[y] + dusername] == 1 or systemdata[threadname, qchan][dusername] == 1:
+                    ul_edit(threadname, 'rem', qchan, lk[y] + dusername)
+                    ul_edit(threadname, 'add', qchan, lk[y] + dnewuser)
+                    break
+            except KeyError:
                 continue
-            if istok(ul_cleaner(systemdata[threadname, qchan][y]).lower(), username.lower(), b' ') is True:
-                ul_edit(threadname, 'rem', bytes(q_chan[x], 'utf-8'), username)
-                continue
+            continue
         continue
     return
 # ======================================================================================================================
@@ -794,7 +772,7 @@ async def exct_raw(threadname, raw, recv):
     global systemdata
     rdata = recv.split(b' ')
     # 353 /NAMES reply
-    # :servername 353 botname @ #channel :username1, @username2, username3, &username4, etc
+    # :servername 353 botname @ #channel :username1 @username2 username3 &username4 etc
     if raw == b'353' and len(rdata) > 5:
         n_chan = rdata[4].decode()
         n_chan = n_chan.lower()
@@ -815,7 +793,7 @@ async def exct_raw(threadname, raw, recv):
 async def exct_chk(threadname, recv):
     global systemdata
     # ------------------------------------------------------------------------------------------------------------------
-    # check for user list errors
+    # check for user list errors (OLD)
     str_err_chk = recv
     if str_err_chk.find(b':') == -1 and systemdata[threadname, 'nameschan'] != '':
         ul_err_fix(threadname, recv)
@@ -827,47 +805,39 @@ async def exct_chk(threadname, recv):
 # Create a user list
 def ul_build(threadname, chan, namesdata):
     global systemdata
-    # systemdata[s_server, s_chan] = {}
-    # systemdata[threadname, channel][x] = block x
-    # len(systemdata[threadname, channel]) = total amount of lists
     ulchan = chan.lower()
     ulchan = ulchan.replace('#', '')
-    ulnum = int(systemdata[threadname, ulchan][ulchan]) + 1
     ultmp = b''
     if numtok(namesdata, b':') == 3:
         ultmp = gettok(namesdata, 2, b':')
-    if numtok(namesdata, b':') < 3:
+    else:
         ultmp = gettok(namesdata, 1, b':')
-    systemdata[threadname, ulchan][ulchan] = ulnum
-    systemdata[threadname, ulchan][ulnum] = ultmp
-    mprint(f'{threadname} * /NAMES #{ulchan}: [{ulnum}] {ultmp}')
+    ultmp = ultmp.decode()
+    ultok = ultmp.split(' ')
+    for x in range(len(ultok)):
+        try:
+            if systemdata[threadname, ulchan][ultok[x]] == 0:
+                systemdata[threadname, ulchan][ultok[x]] = 1
+                continue
+        except KeyError:
+            systemdata[threadname, ulchan][ultok[x]] = 1
+            continue
+    mprint(f'{threadname} * /NAMES #{ulchan}: {systemdata[threadname, ulchan]}')
     return
 # ======================================================================================================================
 # fixes broken character strings during list creation
+# OLD
 def ul_err_fix(threadname, recvdata):
     global systemdata
-    errchan = systemdata[threadname, 'nameschan']
-    errchan = errchan.replace('#', '')
-    errnum = int(systemdata[threadname, errchan][errchan])
-    str_err = systemdata[threadname, errchan][errnum]
-    str_fix = str_err + recvdata
-    systemdata[threadname, errchan][errnum] = str_fix
+    # errchan = systemdata[threadname, 'nameschan']
+    # errchan = errchan.replace('#', '')
+    # errnum = int(systemdata[threadname, errchan][errchan])
+    # str_err = systemdata[threadname, errchan][errnum]
+    # str_fix = str_err + recvdata
+    # systemdata[threadname, errchan][errnum] = str_fix
     mprint(f'{threadname} * USER LIST ERROR FOUND.')
     mprint(f'{threadname} * FIX - /NAMES #{errchan}: [{errnum}] {systemdata[threadname, errchan][errnum]}')
     return 1
-# ======================================================================================================================
-# Takes a string of usernames and removes channel mode characters.
-def ul_cleaner(ultext):
-    cleaner = ultext.replace(b'@', b'')
-    cleaner = cleaner.replace(b'~', b'')
-    cleaner = cleaner.replace(b'!', b'')
-    cleaner = cleaner.replace(b'%', b'')
-    cleaner = cleaner.replace(b'+', b'')
-    cleaner = cleaner.replace(b'&', b'')
-    cleaner = cleaner.replace(b', ', b' ')
-    cleaner = cleaner.replace(b',', b' ')
-    # mprint(f'* CLEANER TEST: {cleaner}')
-    return cleaner
 # ======================================================================================================================
 # add or remove a nickname from user list
 def ul_edit(threadname, args, chan, user):
@@ -880,102 +850,16 @@ def ul_edit(threadname, args, chan, user):
     # ul_edit(threadname, 'add', b'#channel', b'username')
     # add user to user list
     if args.lower() == 'add':
-        try:
-            # mprint(f'edchan: {edchan} systemdata[threadname, edchan][edchan]: {systemdata[threadname, edchan][edchan]}')
-            ul_tnum = int(systemdata[threadname, edchan][edchan])
-            # mprint(f'ul_edit - ul_tnum: {ul_tnum} edchan: {edchan} Line: 881')
-            ul_user = systemdata[threadname, edchan][ul_tnum].split(b' ')
-        except KeyError:
-            # mprint('Found KeyError -------------------------------*********************************')
-            ul_tnum = 1
-            # mprint(f'USER LIST: {systemdata[threadname, edchan]}')
-            ul_user = systemdata[threadname, edchan][ul_tnum].split(b' ')
-        if len(ul_user) >= 40:
-            ul_tnum += 1
-            systemdata[threadname, edchan][ul_tnum] = user
-        else:
-            systemdata[threadname, edchan][ul_tnum] = systemdata[threadname, edchan][ul_tnum] + b' ' + user
-        ul_list(threadname, chan)
+        systemdata[threadname, edchan][user] = 1
         return
     # ------------------------------------------------------------------------------------------------------------------
     # ul_edit(threadname, 'rem', b'#channel, b'username')
     # remove user from channel user list (PART, KICK)
     if args.lower() == 'rem':
-        for x in range(len(systemdata[threadname, edchan])):
-            if x == 0:
-                continue
-            ul = systemdata[threadname, edchan][x]
-            ul = ul_cleaner(ul)
-            if iistok(ul.lower(), user.lower(), b' ') is True:
-                ul_str = systemdata[threadname, edchan][x].split(b' ')
-                ul_n = b''
-                for y in range(len(ul_str)):
-                    if ul_cleaner(ul_str[y]).lower() == user.lower():
-                        continue
-                    else:
-                        if ul_n == b'':
-                            ul_n = ul_str[y]
-                            continue
-                        else:
-                            ul_n = ul_n + b' ' + ul_str[y]
-                            continue
-                systemdata[threadname, edchan][x] = ul_n
-                ul_list(threadname, chan)
-                return
-            continue
+        systemdata[threadname, edchan][user] = 0
+        systemdata[threadname, edchan].remove(user)
         return
-# ======================================================================================================================
-# ul_remuser(threadname, chan, user) #NOT USED
-# only for ul_edit()
-# def ul_remuser(threadname, chan, user):
-#    global systemdata
-#    edchan = chan.decode()
-#    edchan = edchan.replace('#', '')
-#    edchan = edchan.replace(':', '')
-#    edchan = edchan.lower()
-#    for x in range(len(systemdata[threadname, edchan])):
-#        if x == 0:
-#            continue
-#        ul = systemdata[threadname, edchan][x]
-#        ul = ul_cleaner(ul)
-#        if iistok(ul.lower(), user.lower(), b' ') is True:
-#            ul_str = systemdata[threadname, edchan][x].split(b' ')
-#            ul_n = b''
-#            for y in range(len(ul_str)):
-#                if ul_cleaner(ul_str[y]).lower() == user.lower():
-#                    continue
-#                else:
-#                    if ul_n == b'':
-#                        ul_n = ul_str[y]
-#                        continue
-#                    else:
-#                        ul_n = ul_n + b' ' + ul_str[y]
-#                        continue
-#            systemdata[threadname, edchan][x] = ul_n
-#            # mprint(f'UL_STR: {ul_n} USER: {user}')
-#            ul_list(threadname, chan)
-#            return
-#        continue
-#    return
-# ======================================================================================================================
-# lists userlist for specified channel to screen (testing purposes)
-def ul_list(threadname, chan):
-    global systemdata
-    lchan = chan.lower()
-    lchan = lchan.decode()
-    lchan = lchan.replace('#', '')
-    lchan = lchan.replace(':', '')
-    if systemdata[threadname, lchan][lchan] == 0:
-        mprint(f'{threadname} * {chan} Userlist empty.')
-        return
-    else:
-        for x in range(len(systemdata[threadname, lchan])):
-            if x == 0:
-                continue
-            mprint(f'{threadname} * {chan} Userlist [{x}]: {systemdata[threadname, lchan][x]}')
-            continue
     return
-
 # ======================================================================================================================
 # System Utility Functions
 # These are functions that can be used for bridging the system to a zcore module.
@@ -984,17 +868,30 @@ def ul_list(threadname, chan):
 # determines if user is on channel
 def is_on_chan(threadname, chan, user):
     global systemdata
-    onchan = chan.decode()
+    try:
+        onchan = chan.decode()
+    except TypeError:
+        onchan = chan
     onchan = onchan.lower()
     onchan = onchan.replace('#', '')
-    for x in range(len(systemdata[threadname, onchan])):
-        if x == 0:
-            continue
-        else:
-            ul_l = ul_cleaner(systemdata[threadname, onchan][x])
-            if istok(ul_l.lower(), user.lower(), b' ') is True:
-                return True
-            else:
+    try:
+        duser = user.decode()
+    except TypeError:
+        duser = user
+    lkl = '~ ! @ % & + ^ - @& &@'
+    lk = lkl.split(' ')
+    mprint(f'USERS: {systemdata[threadname, onchan]}')
+    try:
+        if systemdata[threadname, onchan][duser]:
+            return True
+    except KeyError:
+        for x in range(len(lk)):
+            try:
+                # mprint(f'USER CHECK: {lk[x] + duser} USER LIST: {systemdata[threadname, onchan]}')
+                tuser = lk[x] + duser
+                if systemdata[threadname, onchan][tuser]:
+                    return True
+            except KeyError:
                 continue
     return False
 
@@ -1006,22 +903,15 @@ def is_op(threadname, chan, user):
     opchan = opchan.lower()
     opchan = opchan.replace('#', '')
     opchan = opchan.replace(':', '')
-    for x in range(len(systemdata[threadname, opchan])):
-        if x == 0:
+    duser = user.decode()
+    lkl = '~ ! @ %'
+    lk = lkl.split(' ')
+    for x in range(len(lk)):
+        try:
+            if systemdata[threadname, opchan][lk[x] + duser] == 1:
+                return True
+        except KeyError:
             continue
-        else:
-            if istok(systemdata[threadname, opchan][x].lower(), b'%' + user.lower(), b' ') is True:
-                return True
-            elif istok(systemdata[threadname, opchan][x].lower(), b'@' + user.lower(), b' ') is True:
-                return True
-            elif istok(systemdata[threadname, opchan][x].lower(), b'&' + user.lower(), b' ') is True:
-                return True
-            elif istok(systemdata[threadname, opchan][x].lower(), b'!' + user.lower(), b' ') is True:
-                return True
-            elif istok(systemdata[threadname, opchan][x].lower(), b'~' + user.lower(), b' ') is True:
-                return True
-            else:
-                continue
     return False
 
 # is_vc(threadname, chan, user) ----------------------------------------------------------------------------------------
@@ -1031,14 +921,12 @@ def is_vc(threadname, chan, user):
     vchan = chan.decode()
     vchan = vchan.lower()
     vchan = vchan.replace('#', '')
-    for x in range(len(systemdata[threadname, vchan])):
-        if x == 0:
-            continue
-        else:
-            if istok(systemdata[threadname, vchan][x].lower(), b'+' + user.lower(), b' ') is True:
-                return True
-            else:
-                continue
+    duser = user.decode()
+    try:
+        if systemdata[threadname, vchan]['+' + duser] == 1:
+            return True
+    except KeyError:
+        return False
     return False
 
 # is_botmaster(user) ---------------------------------------------------------------------------------------------------
