@@ -861,6 +861,22 @@ def ul_edit(threadname, args, chan, user):
         return
     return
 # ======================================================================================================================
+# Returns specified user name with case sensative correction
+def ul_case(threadname, chan, user):
+    global systemdata
+    uchan = chan.decode()
+    uchan = uchan.lower()
+    uchan = uchan.replace('#', '')
+    for x in range(len(systemdata[threadname, uchan])):
+        lst = list(systemdata[threadname, uchan])[x]
+        itm = str.maketrans('', '', '~!@%&+^-')
+        ret = lst.translate(itm)
+        if ret.lower() == user.lower():
+            return ret
+        continue
+    return 'err'
+
+# ======================================================================================================================
 # System Utility Functions
 # These are functions that can be used for bridging the system to a zcore module.
 
@@ -874,6 +890,8 @@ def is_on_chan(threadname, chan, user):
         onchan = chan
     onchan = onchan.lower()
     onchan = onchan.replace('#', '')
+    # mprint(f'ITEMS {systemdata[threadname, onchan].items()} KEYS: {systemdata[threadname, onchan].keys()} LEN: {len(systemdata[threadname, onchan])} POS 1: {list(systemdata[threadname, onchan])[1]}')
+    # ITEMS dict_items([('WingZero', 1), ('@BorisVII', 1), ('@Neo_Nemesis', 1)]) KEYS: dict_keys(['WingZero', '@BorisVII', '@Neo_Nemesis']) LEN: 3 POS 1: @BorisVII
     try:
         duser = user.decode()
     except TypeError:
@@ -893,6 +911,13 @@ def is_on_chan(threadname, chan, user):
                     return True
             except KeyError:
                 continue
+    for x in range(len(systemdata[threadname, onchan])):
+        listxt = list(systemdata[threadname, onchan])[x]
+        listitem = str.maketrans('', '', '~!@%&+^-')
+        tabitem = listxt.translate(listitem)
+        if tabitem.lower() == duser.lower():
+            return True
+        continue
     return False
 
 # is_op(threadname, chan, user) ----------------------------------------------------------------------------------------
