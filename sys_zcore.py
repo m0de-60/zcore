@@ -861,10 +861,23 @@ def ul_edit(threadname, args, chan, user):
     # ul_edit(threadname, 'rem', b'#channel, b'username')
     # remove user from channel user list (PART, KICK, NICK)
     if args.lower() == 'rem':
-        systemdata[threadname, edchan][user] = 0
-        del systemdata[threadname, edchan][user]
-        # systemdata[threadname, edchan].remove(user)
-        # mprint(f'ul_edit REM: {systemdata[threadname, edchan]}')
+        print(f'UL_EDIT REM {user}')
+        try:
+            if systemdata[threadname, edchan][user]:
+                systemdata[threadname, edchan][user] = 0
+                del systemdata[threadname, edchan][user]
+        except KeyError:
+            tkstr = '~ ! @ % & + ^ - @& &@'
+            tkstrng = tkstr.split(' ')
+            for x in range(len(tkstrng)):
+                tuser = tkstrng[x] + user
+                try:
+                    if systemdata[threadname, edchan][tuser]:
+                        systemdata[threadname, edchan][tuser] = 0
+                        del systemdata[threadname, edchan][tuser]
+                except KeyError:
+                    continue
+        print(f'ul_edit REM: {systemdata[threadname, edchan]}')
         return
     return
 # ======================================================================================================================
